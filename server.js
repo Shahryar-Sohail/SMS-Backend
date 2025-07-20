@@ -8,30 +8,31 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const authRoutes = require('./routes/auth');
 require('dotenv').config(); 
 
-
-
 const app = express();
-const port = 3000;
 
-// Enable CORS for all routes
-app.use(cors());   
+// ✅ Dynamic port for Render
+const port = process.env.PORT || 3000;
 
-// Middleware
+// ✅ CORS: open for all (during development)
+app.use(cors());
+
+// ✅ Middleware
 app.use(express.json());
 
-const JWT_SECRET = process.env.JWT_SECRET; // Use environment variable for JWT secret
+// ✅ JWT secret from .env
+const JWT_SECRET = process.env.JWT_SECRET;
 
+// ✅ MongoDB Atlas connection using MONGO_URI from .env
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ MongoDB Atlas connected'))
+.catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// MongoDB connection
-mongoose.connect('mongodb://127.0.0.1:27017/mydb')
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ Connection error:', err));
-
-// Sample route
+// ✅ Test route
 app.get('/', async (req, res) => {
   const students = await User.find();
-
-  // Serve HTML + inline script to log data in browser console
   res.send(`
     <h1>✅ Express backend working</h1>
     <script>
@@ -41,11 +42,9 @@ app.get('/', async (req, res) => {
   `);
 });
 
-
-//Sample Attendance 
+// ✅ Test Attendance route
 app.get('/attendance-log', async (req, res) => {
   const attendance = await Attendance.find();
-
   res.send(`
     <h1>📅 Attendance Data Loaded</h1>
     <script>
@@ -55,21 +54,15 @@ app.get('/attendance-log', async (req, res) => {
   `);
 });
 
-
-// Mounts all routes from studentRoutes.js
+// ✅ Routes
 app.use('/api/students', studentRoutes); 
-
-// Mounts all routes from attendanceRoutes.js
 app.use('/api/attendance', attendanceRoutes);
-
-// Routes
 app.use('/api', authRoutes);
 
-
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
-
-//Image Fix
+// ✅ Serve static files
 app.use('/asset', express.static('public/asset'));
 
+// ✅ Start server
+app.listen(port, () => {
+  console.log(`🚀 Server listening on port ${port}`);
+});
